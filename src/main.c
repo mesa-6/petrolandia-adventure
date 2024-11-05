@@ -16,6 +16,7 @@
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
 typedef enum { FIRST = 0, SECOND, THIRD } OndaObstaculo;
+typedef enum { MENU = 0, PLAY, GAME_OVER } GameState;
 
 typedef struct Barco{
 	Rectangle rec;
@@ -38,6 +39,8 @@ typedef struct Obstaculo{
 static const int screenWidth = 800;
 static const int screenHeight = 450;
 
+static GameState currentGameState = MENU;
+
 static bool gameOver = false;
 static int score = 0;
 static bool victory = false;
@@ -54,6 +57,7 @@ static bool smooth = false;
 
 Texture2D Barcotextura;
 Texture2D CenarioTexture;
+Texture2D MenuInicial;
 
 //------------------------------------------------------------------------------------
 // Module Functions Declaration (local)
@@ -92,6 +96,7 @@ int main(void){
 void InitGame(void){
 	Barcotextura = LoadTexture("resources/Barco.png");
 	CenarioTexture = LoadTexture("resources/Cenario.png");
+	MenuInicial = LoadTexture("resources/MenuInical.png");
 
 	gameOver = false;
 	victory = false;
@@ -121,6 +126,37 @@ void InitGame(void){
 		obstaculo[i].color = GRAY;
 	}
 }
+
+// Desenhando o Menu
+void DrawMenu(void) {
+    BeginDrawing();
+    
+    DrawTexture(MenuInicial, 0, 0, WHITE);
+    
+    // Título do Jogo (Posicionado no canto superior esquerdo)
+    DrawText("PETROLÂNDIA Adventure", 20, 20, 45, DARKBLUE);
+    
+    // Texto de instrução (Posicionado abaixo do título)
+    DrawText("ENTER PARA INICIAR", 20, 100, 25, DARKGRAY);
+    DrawText("ESC PARA SAIR", 20, 150, 25, DARKGRAY);
+    
+    EndDrawing();
+}
+
+
+void UpdateMenu(void) {
+    if (IsKeyPressed(KEY_ENTER)) {
+        // Começa o jogo
+        currentGameState = PLAY;
+        InitGame();  // Inicializa o jogo (barco, inimigos, etc.)
+    }
+    
+    if (IsKeyPressed(KEY_ESCAPE)) {
+        // Fecha o jogo
+        CloseWindow();
+    }
+}
+
 
 // Update game (one frame)
 void UpdateGame(void){
@@ -265,9 +301,9 @@ void DrawGame(void){
 			//Menssagem Vitoria - MUDAR POR TEMPO
 			if (victory) DrawText("YOU WIN", screenWidth/2 - MeasureText("YOU WIN", 40)/2, screenHeight/2 - 40, 40, BLACK);
 		}
-		else DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20)/2, GetScreenHeight()/2 - 50, 20, BLACK);
-
-	EndDrawing();
+		else {
+		        DrawText("PRESS ENTER TO PLAY AGAIN", screenWidth / 2 - MeasureText("PRESS ENTER TO PLAY AGAIN", 20) / 2, screenHeight / 2 + 20, 20, DARKGRAY);
+		}EndDrawing();
 }
 
 // Unload game variables
@@ -275,10 +311,27 @@ void UnloadGame(void){
 	// Libere a textura
 	UnloadTexture(Barcotextura);
 	UnloadTexture(CenarioTexture);
+	UnloadTexture(MenuInicial);
 }
 
 // Update and Draw (one frame)
-void UpdateDrawFrame(void){
-	UpdateGame();
-	DrawGame();
+void UpdateDrawFrame(void) {
+    switch (currentGameState) {
+        case MENU:
+            UpdateMenu();  // Atualiza o menu
+            DrawMenu();    // Desenha o menu
+            break;
+        case PLAY:
+            UpdateGame();  // Atualiza o jogo (movimentação, inimigos, etc.)
+            DrawGame();    // Desenha o jogo
+            break;
+        case GAME_OVER:
+            DrawGame();    // Desenha a tela de game over (pode ser a mesma de jogo, mas com uma mensagem)
+            if (IsKeyPressed(KEY_ENTER)) {
+                currentGameState = MENU;  // Volta para o menu
+            }
+            break;
+        default:
+            break;
+    }
 }
