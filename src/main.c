@@ -84,6 +84,7 @@ int main(void){
 
 // Initialize game variables
 void InitGame(void){
+	limpaObstaculos(&head, &tail);
 	Barcotextura = LoadTexture("resources/Barco.png");
 	CenarioTexture = LoadTexture("resources/Cenario.png");
 	MenuInicial = LoadTexture("resources/MenuInical.png");
@@ -107,12 +108,12 @@ void InitGame(void){
 
 	// Initialize enemies
 	for (int i = 0; i < 7; i++){
-		inserir(&head, &tail);
+		inserirobstaculos(&head, &tail);
 	}
 }
 
 //insere um novo obstaculo na lista
-void inserir(ListObj **head, ListObj **tail) {
+void inserirobstaculos (ListObj **head, ListObj **tail) {
   ListObj *novo = (ListObj *) malloc(sizeof(ListObj));
   if(novo != NULL){
     novo->obstaculo.rec.width = 15;
@@ -133,6 +134,23 @@ void inserir(ListObj **head, ListObj **tail) {
 		*tail = novo;
     }
   }
+}
+
+void limpaObstaculos(ListObj **head, ListObj **tail) {
+    if (*head == NULL){
+		return;
+	}
+	else{
+		ListObj *aux = *head;
+    	ListObj *prox;
+    	do {
+        	prox = aux->prox;
+        	free(aux);
+        	aux = prox;
+    	} while (aux != *head);
+		*head = NULL;
+		*tail = NULL;
+	}
 }
 
 // Desenhando o Menu
