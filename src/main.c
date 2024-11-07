@@ -6,12 +6,12 @@
 	#include <emscripten/emscripten.h>
 #endif
 
-//A onda seria por pontuação ( Onda 1 -  )
-//A jeitar geração de obstáculos por onda
 #define NUM_MAX_ENEMIES 20
 #define FIRST_WAVE 7
 #define SECOND_WAVE 15
 #define THIRD_WAVE 20
+
+#define NUM_MAX_BANHISTA 5
 
 typedef enum { FIRST = 0, SECOND, THIRD } OndaObstaculo;
 typedef enum { MENU = 0, PLAY, GAME_OVER } GameState;
@@ -33,8 +33,31 @@ typedef struct ListObj{
 	struct ListObj *prox;
 } ListObj;
 
+typedef struct Banhista{
+	Rectangle rec;
+	Vector2 speed;
+	bool active;
+	Color cor;
+} Banhista;
+
+typedef struct ListBanhista{
+	Banhista banhista;
+	struct Listbanhista *prox;
+} ListBanhista;
+
+typedef struct BanhistaColetados{
+	Banhista banhista;
+	struct Listbanhista *prox;
+} BanhistaColetados;
+
 Obstaculo *head = NULL;
 Obstaculo *tail = NULL;
+
+Banhista *headBanhista = NULL;
+Banhista *tailBanhista = NULL;
+
+BanhistaColetados *headBanhistaColetados = NULL;
+BanhistaColetados *tailBanhistaColetados = NULL;
 
 static const int screenWidth = 1000;
 static const int screenHeight = 749;
@@ -43,10 +66,13 @@ static GameState currentGameState = MENU;
 
 static bool gameOver = false;
 static int score = 0;
+static int banhistaSalvos = 0;
+static float timerBanhista = 0;
 static bool victory = false;
 
 static Barco barco = { 0 };
 static Obstaculo obstaculo[NUM_MAX_ENEMIES] = { 0 };
+static Banhista banhista[NUM_MAX_BANHISTA] = { 0 };
 static OndaObstaculo wave = { 0 };
 
 static float alpha = 0.0f;
@@ -82,9 +108,10 @@ int main(void){
 		return 0;
 }
 
-// Initialize game variables
 void InitGame(void){
 	limpaObstaculos(&head, &tail);
+	limparBanhistas(&headBanhista, &tailBanhista);
+
 	Barcotextura = LoadTexture("resources/Barco.png");
 	CenarioTexture = LoadTexture("resources/Cenario.png");
 	MenuInicial = LoadTexture("resources/MenuInical.png");
@@ -94,11 +121,9 @@ void InitGame(void){
 	smooth = false;
 	wave = FIRST;
 	activeEnemies = FIRST_WAVE;
-	//Pontuação quando chega no final da tela ( 10 em 10 )
 	score = 0;
 	alpha = 0;
 
-	// Initialize player
 	barco.rec.x = 20;
 	barco.rec.y = 50;
 	barco.rec.width = Barcotextura.width;
@@ -106,13 +131,14 @@ void InitGame(void){
 	barco.speed.x = 4;
 	barco.speed.y = 4;
 
-	// Initialize enemies
 	for (int i = 0; i < 7; i++){
 		inserirobstaculos(&head, &tail);
 	}
+	for (int i = 0; i <NUM_MAX_BANHISTA; i++){
+		inserirBanhista(&headBanhista, &tailBanhista);
+	}
 }
 
-//insere um novo obstaculo na lista
 void inserirobstaculos (ListObj **head, ListObj **tail) {
   ListObj *novo = (ListObj *) malloc(sizeof(ListObj));
   if(novo != NULL){
@@ -153,16 +179,97 @@ void limpaObstaculos(ListObj **head, ListObj **tail) {
 	}
 }
 
-// Desenhando o Menu
+void inserirBanhista (ListBanhista **head, ListBanhista **tail){
+    ListBanhista *nova = (ListBanhista *)malloc(sizeof(ListBanhista));
+    if (nova != NULL){
+        nova->banhista.rec.width = 15;
+        nova->banhista.rec.height = 15;
+        nova->banhista.rec.x = GetRandomValue(screenWidth, screenWidth + 1000);
+        nova->banhista.rec.y = GetRandomValue(470, 700);
+        nova->banhista.speed.x = 5;
+        nova->banhista.speed.y = 5;
+        nova->banhista.active = true;
+        nova->banhista.cor = RED;
+        nova->prox = NULL;
+        if (*head == NULL){
+            *head = nova;
+            *tail = nova;
+        }
+		else {
+            (*tail)->prox = nova;
+            *tail = nova;
+        }
+    }
+}
+
+void limparBanhistas(ListBanhista **head, ListBanhista **tail){
+	if (*head == NULL){
+		return;
+	}
+	else{
+		ListBanhista *aux = *head;
+		ListBanhista *prox = *head;
+		while (aux != NULL){
+			prox = prox->prox;
+			free(aux);
+			aux = prox;
+		}
+		*head = NULL;
+		*tail = NULL;
+	}
+}
+
+void inserirBanhistaColetados(BanhistaColetados **head, BanhistaColetados **tail) {
+    BanhistaColetados *novo = (BanhistaColetados *)malloc(sizeof(BanhistaColetados));
+    if (novo != NULL) {
+        novo->banhista.rec.width = 15;
+        novo->banhista.rec.height = 15;
+        novo->banhista.active = true;
+        novo->prox = NULL;
+        if (*head == NULL) {
+            *head = novo;
+            *tail = novo;
+        } else {
+            (*tail)->prox = novo;
+            *tail = novo;
+        }
+    }
+}
+
+int countBanhistasColetados(BanhistaColetados *head) {
+    int count = 0;
+    BanhistaColetados *atual = head;
+    while (atual != NULL) {
+        count++;
+        atual = atual->prox;
+    }
+    return count;
+}
+
+void limparBanhistasColetados(BanhistaColetados **head, BanhistaColetados **tail){
+	if (*head == NULL){
+		return;
+	}
+	else{
+		BanhistaColetados *aux = *head;
+		BanhistaColetados *prox = *head;
+		while (aux != NULL){
+			prox = prox->prox;
+			free(aux);
+			aux = prox;
+		}
+		*head = NULL;
+		*tail = NULL;
+	}
+}
+
 void DrawMenu(void) {
     BeginDrawing();
     
     DrawTexture(MenuInicial, 0, 0, WHITE);
     
-    // Título do Jogo (Posicionado no canto superior esquerdo)
     DrawText("PETROLÂNDIA ADVENTURE", 20, 20, 45, DARKBLUE);
     
-    // Texto de instrução (Posicionado abaixo do título)
     DrawText("ENTER PARA INICIAR", 20, 100, 30, DARKBLUE);
     DrawText("ESC PARA SAIR", 20, 150, 30, DARKBLUE);
     
@@ -181,9 +288,9 @@ void UpdateMenu(void) {
 
 void UpdateGame(void){
 	ListObj *atual = head;
+	ListBanhista *banhistaTela = headBanhista;
 
 	if (!gameOver){
-		//Mostra na tela "INICIO DA AVENTURA"
 		if (!smooth){
 			alpha += 0.02f;
 			if (alpha >= 1.0f) smooth = true;
@@ -205,20 +312,26 @@ void UpdateGame(void){
 			alpha = 0.0f;
 		}
 
+		timerBanhista += GetFrameTime();
+		if (timerBanhista >= 5.0f) {
+			inserirBanhista(&headBanhista, &tailBanhista);
+			timerBanhista = 0;
+	}
+
 		atual = head;
 
-		//Movimentação
 		if (IsKeyDown(KEY_D)) barco.rec.x += barco.speed.x;
 		if (IsKeyDown(KEY_A)) barco.rec.x -= barco.speed.x;
 		if (IsKeyDown(KEY_W)) barco.rec.y -= barco.speed.y;
 		if (IsKeyDown(KEY_S)) barco.rec.y += barco.speed.y;
 
-		//Colisão
 		do {
             if (atual->obstaculo.active && CheckCollisionRecs(barco.rec, atual->obstaculo.rec)) {
-                score -= 10;
+                score -= 50;
+				banhistaSalvos -= 1;
                 atual->obstaculo.active = false;
                 if (score == 0) {
+					timerBanhista = 0;
                     gameOver = true;
                 }
             }
@@ -232,7 +345,7 @@ void UpdateGame(void){
             if (atual->obstaculo.active) {
                 atual->obstaculo.rec.x -= atual->obstaculo.speed.x;
                 if (atual->obstaculo.rec.x < 0) {
-					score += 10;
+					score += 100;
                     atual->obstaculo.rec.x = GetRandomValue(screenWidth, screenWidth + 1000);
                     atual->obstaculo.rec.y = GetRandomValue(470, 700);
                 }
@@ -241,7 +354,33 @@ void UpdateGame(void){
             atual = atual->prox;
         } while (atual != head);
 
-		//Comportamento Parede
+		while (banhistaTela != NULL){
+			if (banhistaTela->banhista.active && CheckCollisionRecs (barco.rec, banhistaTela->banhista.rec)){
+				inserirBanhistaColetados(&headBanhistaColetados, &tailBanhistaColetados);
+            	banhistaSalvos = countBanhistasColetados(headBanhistaColetados);	
+				if (banhistaSalvos == 50){
+					barco.speed.x -= 1;
+				}
+				if (banhistaSalvos == 100){
+					barco.speed.x -= 1;
+				}
+            	banhistaTela->banhista.active = false;
+			}
+			if (!banhistaTela->banhista.active){
+				banhistaTela->banhista.active = true;
+				banhistaTela->banhista.rec.x = GetRandomValue(screenWidth, screenWidth + 1000);
+                banhistaTela->banhista.rec.y = GetRandomValue(470, 700);
+			}
+			if (banhistaTela->banhista.active) {
+                banhistaTela->banhista.rec.x -= banhistaTela->banhista.speed.x;
+                if (banhistaTela->banhista.rec.x < 0) {
+                    atual->obstaculo.rec.x = GetRandomValue(screenWidth, screenWidth + 1000);
+                    atual->obstaculo.rec.y = GetRandomValue(470, 700);
+                }
+            }
+			banhistaTela = banhistaTela->prox;
+		}
+
 		if (barco.rec.x <= 0){
 			barco.rec.x = 0;
 		}
@@ -263,7 +402,6 @@ void UpdateGame(void){
 	}
 }
 
-// Draw game (one frame)
 void DrawGame(void){
 	BeginDrawing();
 	DrawTexture(CenarioTexture, 0, 0, WHITE);
@@ -281,10 +419,15 @@ void DrawGame(void){
 			atual = atual->prox;
 		}while (atual != head);
 
-		//Pontuação
-		DrawText(TextFormat("%04i", score), 20, 20, 40, RED);
+		ListBanhista *banhistaTela = headBanhista;
+        while (banhistaTela != NULL){
+            DrawRectangleRec(banhistaTela->banhista.rec, banhistaTela->banhista.cor);
+            banhistaTela = banhistaTela->prox;
+        }
 
-		//Menssagem Vitoria - MUDAR POR TEMPO
+		DrawText(TextFormat("%04i", score), 20, 20, 40, RED);
+		DrawText(TextFormat("%04i", banhistaSalvos), 900, 20, 40, RED);
+
 		if (victory) DrawText("YOU WIN", screenWidth/2 - MeasureText("YOU WIN", 40)/2, screenHeight/2 - 40, 40, BLACK);
 	}
 	else DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20)/2, GetScreenHeight()/2 - 50, 20, BLACK);
@@ -292,7 +435,6 @@ void DrawGame(void){
 	EndDrawing();
 }
 
-// Unload game variables
 void UnloadGame(void){
 	UnloadTexture(Barcotextura);
 	UnloadTexture(CenarioTexture);
