@@ -63,6 +63,9 @@ static const int screenWidth = 1000;
 static const int screenHeight = 749;
 
 static GameState currentGameState = MENU;
+static char nick[20] = {0};  // Nickname do jogador
+static int nickIndex = 0;     // Índice de entrada do nick
+static bool enteringNick = false;
 
 static bool gameOver = false;
 static int score = 0;
@@ -273,15 +276,47 @@ void DrawMenu(void) {
     DrawText("ENTER PARA INICIAR", 20, 100, 30, DARKBLUE);
     DrawText("ESC PARA SAIR", 20, 150, 30, DARKBLUE);
     
+	if (enteringNick) {
+        int boxWidth = 300;
+        int boxHeight = 80;
+        int boxX = screenWidth / 2 - boxWidth / 2;
+        int boxY = screenHeight / 2 - boxHeight / 2;
+
+        DrawRectangle(boxX, boxY, boxWidth, boxHeight, LIGHTGRAY);  // Caixa para entrada de texto
+        DrawRectangleLines(boxX, boxY, boxWidth, boxHeight, DARKGRAY); // Borda da caixa
+        DrawText("Digite seu Nick:", boxX + 10, boxY + 10, 20, DARKBLUE);  // Instrução
+        DrawText(nick, boxX + 10, boxY + 40, 30, DARKBLUE);  // Nickname digitado
+
+        DrawText("Pressione ENTER para confirmar", boxX + 10, boxY + 60, 10, GRAY); // Instrução de confirmação
+    }
+
     EndDrawing();
 } 
 
 void UpdateMenu(void) {
     if (IsKeyPressed(KEY_ENTER)) {
-        currentGameState = PLAY;
-        InitGame();
+        if (!enteringNick) {
+            enteringNick = true; // Inicia a entrada do nick
+        } else if (nickIndex > 0) { // Confirma o nick e inicia o jogo se já tiver digitado algo
+            enteringNick = false;
+            currentGameState = PLAY;
+        }
     }
-    if (IsKeyPressed(KEY_ESCAPE)) {
+
+    if (enteringNick) {
+        int key = GetKeyPressed();
+
+        // Captura de texto
+        if (key >= 32 && key <= 125 && nickIndex < 19) { // Letras, números e símbolos
+            nick[nickIndex++] = (char)key;
+            nick[nickIndex] = '\0';
+        }
+
+        // Apagar último caractere
+        if (IsKeyPressed(KEY_BACKSPACE) && nickIndex > 0) {
+            nick[--nickIndex] = '\0';
+        }
+    } else if (IsKeyPressed(KEY_ESCAPE)) {
         CloseWindow();
     }
 }
@@ -424,7 +459,8 @@ void DrawGame(void){
             DrawRectangleRec(banhistaTela->banhista.rec, banhistaTela->banhista.cor);
             banhistaTela = banhistaTela->prox;
         }
-
+		 int nickPosX = screenWidth / 2 - MeasureText(nick, 30) / 2; // Centraliza horizontalmente
+    	DrawText(nick, nickPosX, 20, 30, BLUE);
 		DrawText(TextFormat("%04i", score), 20, 20, 40, RED);
 		DrawText(TextFormat("%04i", banhistaSalvos), 900, 20, 40, RED);
 
