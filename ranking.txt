@@ -1,0 +1,6 @@
+Gheyson;240;10
+Capistrano;200;8
+Manguinho;180;6
+Tonho;180;5
+Tabosa;160;6
+Natacha;160;0
