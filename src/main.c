@@ -545,6 +545,9 @@ void UpdateGame(void){
 		if (IsKeyPressed(KEY_ENTER)){
 			InitGame();
 			gameOver = false;
+		} else if (IsKeyPressed(KEY_M)){
+			currentGameState=MENU;
+			InitGame();
 		}
 	}
 }
