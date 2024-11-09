@@ -548,6 +548,9 @@ void UpdateGame(void){
 		} else if (IsKeyPressed(KEY_M)){
 			currentGameState=MENU;
 			InitGame();
+		} else if (IsKeyPressed(KEY_R)){
+			currentGameState=GAME_OVER;
+			InitGame();
 		}
 	}
 }
