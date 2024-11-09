@@ -301,7 +301,8 @@ void DrawMenu(void) {
     DrawText("PETROLÂNDIA ADVENTURE", 20, 20, 45, DARKBLUE);
     
     DrawText("ENTER PARA INICIAR", 20, 100, 30, DARKBLUE);
-    DrawText("ESC PARA SAIR", 20, 150, 30, DARKBLUE);
+	DrawText("R PARA VER O RANKING", 20, 150, 30, DARKBLUE);
+    DrawText("ESC PARA SAIR", 20, 200, 30, DARKBLUE);
     
 	if (enteringNick) {
         int boxWidth = 300;
@@ -314,7 +315,7 @@ void DrawMenu(void) {
         DrawText("Digite seu Nick:", boxX + 10, boxY + 10, 20, DARKBLUE);  // Instrução
         DrawText(nick, boxX + 10, boxY + 40, 30, DARKBLUE);  // Nickname digitado
 
-        DrawText("Pressione ENTER para confirmar", boxX + 10, boxY + 60, 10, GRAY); // Instrução de confirmação
+        DrawText("Pressione ENTER para confirmar", boxX + 10, boxY + 70, 10, GRAY); // Instrução de confirmação
     }
 
     EndDrawing();
@@ -345,6 +346,8 @@ void UpdateMenu(void) {
         }
     } else if (IsKeyPressed(KEY_ESCAPE)) {
         CloseWindow();
+    }else if (IsKeyPressed(KEY_R)) {
+        currentGameState = GAME_OVER;
     }
 }
 
@@ -547,48 +550,60 @@ void UpdateGame(void){
 }
 
 void DrawGame(void){
-	BeginDrawing();
+    BeginDrawing();
 
-	if (victory){
-		DrawTexture(FundoVitoria, 0, -20, WHITE);
-		DrawText("VOCÊ CHEGOU A PETROLANDIA", screenWidth / 2 - MeasureText("VOCÊ CHEGOU A PETROLANDIA", 40) / 2, screenHeight / 2 - 20, 40, BLACK);
-	}
+    if (victory){
+        DrawTexture(FundoVitoria, 0, -20, WHITE);
+        DrawText("VOCÊ CHEGOU A PETROLANDIA", screenWidth / 2 - MeasureText("VOCÊ CHEGOU A PETROLANDIA", 40) / 2, screenHeight / 2 - 20, 40, BLACK);
+    }
+    else if(!gameOver){
+        // Desenhar o cenário de fundo
+        DrawTexture(CenarioTexture, 0, 0, WHITE);
+        
+        // Desenhar o barco
+        DrawTexture(Barcotextura, (int)barco.rec.x, (int)barco.rec.y, WHITE);
 
-	else if(!gameOver){
-		DrawTexture(CenarioTexture, 0, 0, WHITE);
+        // Desenhar o texto da onda atual
+        if (wave == PRIMEIRA) 
+            DrawText("PRIMEIRA ONDA", screenWidth/2 - MeasureText("PRIMEIRA ONDA", 40)/2, screenHeight/2 - 40, 40, Fade(BLACK, alpha));
+        else if (wave == SEGUNDA) 
+            DrawText("SEGUNDA ONDA", screenWidth/2 - MeasureText("SEGUNDA ONDA", 40)/2, screenHeight/2 - 40, 40, Fade(BLACK, alpha));
+        else if (wave == TERCEIRA) 
+            DrawText("TERCEIRA ONDA", screenWidth/2 - MeasureText("TERCEIRA ONDA", 40)/2, screenHeight/2 - 40, 40, Fade(BLACK, alpha));
 
-		DrawTexture(Barcotextura, (int)barco.rec.x, (int)barco.rec.y, WHITE);
+        // Desenhar obstáculos
+        ListObj *atual = head;
+        do {
+            if (atual->obstaculo.active) {
+                DrawTexture(PedraTextura, (int)atual->obstaculo.rec.x, (int)atual->obstaculo.rec.y, WHITE);
+            }
+            atual = atual->prox;
+        } while (atual != head);
 
-		if (wave == PRIMEIRA) DrawText("PRIMEIRA ONDA", screenWidth/2 - MeasureText("PRIMEIRA ONDA", 40)/2, screenHeight/2 - 40, 40, Fade(BLACK, alpha));
-		else if (wave == SEGUNDA) DrawText("SEGUNDA ONDA", screenWidth/2 - MeasureText("SEGUNDA ONDA", 40)/2, screenHeight/2 - 40, 40, Fade(BLACK, alpha));
-		else if (wave == TERCEIRA) DrawText("TERCEIRA ONDA", screenWidth/2 - MeasureText("TERCEIRA ONDA", 40)/2, screenHeight/2 - 40, 40, Fade(BLACK, alpha));
-		
-		if (score >= 9000) {
-            DrawText("QUASE NO FIM", screenWidth/2 - MeasureText("QUASE NO FIM", 40)/2, screenHeight/2 - 100, 40, RED);
+        // Desenhar banhistas
+        ListBanhista *banhistaTela = headBanhista;
+        while (banhistaTela != NULL) {
+            if (banhistaTela->banhista.active) {
+                DrawTexture(BanhistaTextura, (int)banhistaTela->banhista.rec.x, (int)banhistaTela->banhista.rec.y, WHITE);
+            }
+            banhistaTela = banhistaTela->prox;
         }
 
-		ListObj *atual = head;
-		do{
-			if (atual->obstaculo.active){
-				DrawTexture(PedraTextura, (int)atual->obstaculo.rec.x, (int)atual->obstaculo.rec.y, WHITE);
-			}
-			atual = atual->prox;
-		}while (atual != head);
+        // Mostrar o nome e score do jogador
+        int nickPosX = screenWidth / 2 - MeasureText(nick, 30) / 2;
+        DrawText(nick, nickPosX, 20, 30, BLUE);
+        DrawText(TextFormat("%04i", score), 20, 20, 40, RED);
 
-		ListBanhista *banhistaTela = headBanhista;
-		while (banhistaTela != NULL){
-			DrawTexture(BanhistaTextura, (int)banhistaTela->banhista.rec.x, (int)banhistaTela->banhista.rec.y, WHITE);
-			banhistaTela = banhistaTela->prox;
-		}
-		int nickPosX = screenWidth / 2 - MeasureText(nick, 30) / 2;
-		DrawText(nick, nickPosX, 20, 30, BLUE);
-		DrawText(TextFormat("%04i", score), 20, 20, 40, RED);
-		DrawTexture(BanhistaTextura, 820, 8, WHITE);
-		DrawText(TextFormat("%04i", banhistaSalvos), 900, 20, 40, RED);
-	}
-	else DrawGameOverScreen();
+        // Mostrar número de banhistas salvos
+        DrawTexture(BanhistaTextura, 820, 8, WHITE);
+        DrawText(TextFormat("%04i", banhistaSalvos), 900, 20, 40, RED);
 
-	EndDrawing();
+    } else {
+        // Se o jogo acabou
+        DrawGameOverScreen();
+    }
+
+    EndDrawing();
 }
 
 void UnloadGame(void){
@@ -635,26 +650,40 @@ void DrawGameOverScreen(void) {
     }
     
     // Verifica se o arquivo abriu corretamente
-    if (file != NULL) {
-        for (int i = 0; i < MAX_RANKING && !feof(file); i++) {
-            fscanf(file, "%s %d %d", ranking[i].nome, &ranking[i].score, &ranking[i].banhistas);
-        }
-        fclose(file);  // Fechar o arquivo após a leitura
-    } else {
-        // Tratar o erro de abertura do arquivo, se necessário
-        printf("Erro ao abrir o arquivo de ranking.\n");
-    }
+	if (file != NULL) { 
+	char line[100]; 
+	for (int i = 0; i < MAX_RANKING && fgets(line, sizeof(line), file); i++) { // Realiza o split da linha por ";" 
+		char *token = strtok(line, ";"); 
+		if (token != NULL) { 
+			strcpy(ranking[i].nome, token); 
+		} token = strtok(NULL, ";"); 
+		if (token != NULL) { 
+			ranking[i].score = atoi(token); 
+		} token = strtok(NULL, ";"); 
+		if (token != NULL) { 
+			ranking[i].banhistas = atoi(token); 
+		} 
+	} 
+	fclose(file); // Fechar o arquivo após a leitura 
+	} else { // Tratar o erro de abertura do arquivo, se necessário 
+	printf("Erro ao abrir o arquivo de ranking.\n"); 
+	}
 
     BeginDrawing();
-    ClearBackground(RAYWHITE);
+    ClearBackground(BLUE);
+
+	DrawRectangle(50, 50, screenWidth -100, screenHeight -100, LIGHTGRAY);
+	DrawRectangleLines(50, 50, screenWidth -100, screenHeight -100, DARKGRAY);
 
     // Exibir as informações do ranking
     for (int i = 0; i < MAX_RANKING; i++) {
-        DrawText(ranking[i].nome, 100, 100 + 30 * i, 20, BLACK);
-        DrawText(TextFormat("Score: %d, Banhistas: %d", ranking[i].score, ranking[i].banhistas), 300, 100 + 30 * i, 20, BLACK);
-    }
+		DrawText(ranking[i].nome, 70, 80 + 30 * i, 20, DARKBLUE);
+        DrawText(TextFormat("Score: %d", ranking[i].score), 200, 80 + 30 * i, 20, DARKGREEN); 
+		DrawText(TextFormat("Banhistas: %d", ranking[i].banhistas), 350, 80 + 30 * i, 20, DARKPURPLE);
 
-    DrawText("Game Over", screenWidth / 2 - MeasureText("Game Over", 40) / 2, screenHeight / 2 - 100, 40, RED);
-
-    EndDrawing();
+		DrawText("Game Over", screenWidth / 2 - MeasureText("Game Over", 40) / 2 + 2, screenHeight / 2 - 100 + 2, 40, GRAY); 
+		DrawText("Game Over", screenWidth / 2 - MeasureText("Game Over", 40) / 2, screenHeight / 2 - 100, 40, RED); 
+    
+	}	
+	EndDrawing();
 }
