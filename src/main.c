@@ -80,6 +80,7 @@ static int score = 0;
 static int banhistaSalvos = 0;
 static float timerBanhista = 0;
 static bool victory = false;
+static int vida = 100;
 
 static Barco barco = { 0 };
 static Obstaculo obstaculo[NUM_MAX_OBJETOS] = { 0 };
@@ -97,6 +98,8 @@ Texture2D MenuInicial;
 Texture2D PedraTextura;
 Texture2D BanhistaTextura;
 Texture2D FundoVitoria;
+Texture2D coracaoTextura;
+Texture2D moeda;
 
 static void InitGame(void);
 static void UpdateGame(void);
@@ -118,8 +121,9 @@ int main(void){
 	#endif
 		UnloadGame();
 		CloseWindow();
-		printf("%d", score);
-		printf("%d", banhistaSalvos);
+		printf("Score: %d\n", score);
+		printf("Banhistas Salvos: %d", banhistaSalvos);
+		printf("Vida: %d", vida);
 		return 0;
 }
 
@@ -134,6 +138,8 @@ void InitGame(void){
 	PedraTextura = LoadTexture("resources/pedra.png");
 	BanhistaTextura = LoadTexture("resources/Pessoa4.png");
 	FundoVitoria = LoadTexture("resources/fim.png");
+	coracaoTextura = LoadTexture("resources/Coracao.png");
+	moeda = LoadTexture ("resources/moeda.png");
 
 	gameOver = false;
 	victory = false;
@@ -141,6 +147,7 @@ void InitGame(void){
 	wave = PRIMEIRA;
 	activeObstaculos = PRIMEIRA_ONDA;
 	score = 0;
+	vida = 100;
 	alpha = 0;
 
 	barco.rec.x = 20;
@@ -435,9 +442,12 @@ void UpdateGame(void){
 						if (banhistaSalvos > 0){
 							banhistaSalvos -= 1;
 						}
+						if (vida > 0){
+							vida -= 1;
+						}
 						removerBanhistaColetados (&headBanhistaColetados, &tailBanhistaColetados);
 						atual->obstaculo.active = false;
-						if (score == 0) {
+						if (vida == 0) {
 							timerBanhista = 0;
 							gameOver = true;
 						}
@@ -451,9 +461,12 @@ void UpdateGame(void){
 						if (banhistaSalvos > 0){
 							banhistaSalvos -= 1;
 						}
+						if (vida > 0){
+							vida -= 1;
+						}
 						removerBanhistaColetados (&headBanhistaColetados, &tailBanhistaColetados);
 						atual->obstaculo.active = false;
-						if (score == 0) {
+						if (vida == 0) {
 							timerBanhista = 0;
 							gameOver = true;
 						}
@@ -467,9 +480,12 @@ void UpdateGame(void){
 						if (banhistaSalvos > 0){
 							banhistaSalvos -= 1;
 						}
+						if (vida > 0){
+							vida -= 1;
+						}
 						removerBanhistaColetados (&headBanhistaColetados, &tailBanhistaColetados);
 						atual->obstaculo.active = false;
-						if (score == 0) {
+						if (vida == 0) {
 							timerBanhista = 0;
 							gameOver = true;
 						}
@@ -487,7 +503,7 @@ void UpdateGame(void){
             if (atual->obstaculo.active) {
                 atual->obstaculo.rec.x -= atual->obstaculo.speed.x;
                 if (atual->obstaculo.rec.x < 0) {
-					score += 50;
+					score += 100;
                     atual->obstaculo.rec.x = GetRandomValue(screenWidth, screenWidth + 1000);
                     atual->obstaculo.rec.y = GetRandomValue(470, 700);
                 }
@@ -561,6 +577,8 @@ void DrawGame(void){
     if (victory){
         DrawTexture(FundoVitoria, 0, -20, WHITE);
         DrawText("VOCÊ CHEGOU A PETROLANDIA", screenWidth / 2 - MeasureText("VOCÊ CHEGOU A PETROLANDIA", 40) / 2, screenHeight / 2 - 20, 40, BLACK);
+		DrawText("M PARA VOLTAR AO MENU", 70, 600, 20, RED);
+		DrawText("ESC PARA SAIR", 70, 650, 20, RED);
     }
     else if(!gameOver){
         // Desenhar o cenário de fundo
@@ -598,7 +616,12 @@ void DrawGame(void){
         // Mostrar o nome e score do jogador
         int nickPosX = screenWidth / 2 - MeasureText(nick, 30) / 2;
         DrawText(nick, nickPosX, 20, 30, BLUE);
-        DrawText(TextFormat("%04i", score), 20, 20, 40, RED);
+
+		DrawTexture(moeda, -5, 15, WHITE);
+        DrawText(TextFormat("%04i", score), 60, 20, 40, RED);
+		
+		DrawTexture(coracaoTextura, 5, 70, WHITE);
+		DrawText(TextFormat("%03i", vida), 60, 75, 40, RED);
 
         // Mostrar número de banhistas salvos
         DrawTexture(BanhistaTextura, 820, 8, WHITE);
@@ -619,6 +642,8 @@ void UnloadGame(void){
 	UnloadTexture(PedraTextura);
 	UnloadTexture(BanhistaTextura);
 	UnloadTexture(FundoVitoria);
+	UnloadTexture(coracaoTextura);
+	UnloadTexture (moeda);
 }
 
 void UpdateDrawFrame(void) {
@@ -688,8 +713,10 @@ void DrawGameOverScreen(void) {
 		DrawText(TextFormat("Banhistas: %d", ranking[i].banhistas), 350, 80 + 30 * i, 20, DARKPURPLE);
 
 		DrawText("Game Over", screenWidth / 2 - MeasureText("Game Over", 40) / 2 + 2, screenHeight / 2 - 100 + 2, 40, GRAY); 
-		DrawText("Game Over", screenWidth / 2 - MeasureText("Game Over", 40) / 2, screenHeight / 2 - 100, 40, RED); 
-    
+		DrawText("Game Over", screenWidth / 2 - MeasureText("Game Over", 40) / 2, screenHeight / 2 - 100, 40, RED);     
 	}	
+	DrawText("M PARA VOLTAR AO MENU", 70, 600, 20, DARKBLUE);
+	DrawText("ESC PARA SAIR", 70, 650, 20, DARKBLUE);
+
 	EndDrawing();
 }
