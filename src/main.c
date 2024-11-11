@@ -52,11 +52,11 @@ typedef struct BanhistaColetados{
 	struct Listbanhista *prox;
 } BanhistaColetados;
 
-typedef struct {
+typedef struct Player {
 		char nome[50];
 		int score;
 		int banhistas;
-} RankEntry;
+} Player;
 
 Obstaculo *head = NULL;
 Obstaculo *tail = NULL;
@@ -613,7 +613,7 @@ void DrawGame(void){
             banhistaTela = banhistaTela->prox;
         }
 
-        // Mostrar o nome e score do jogador
+        // Mostrar o nome e score do Player
         int nickPosX = screenWidth / 2 - MeasureText(nick, 30) / 2;
         DrawText(nick, nickPosX, 20, 30, BLUE);
 
@@ -671,7 +671,7 @@ void UpdateDrawFrame(void) {
 
 void DrawGameOverScreen(void) {
     FILE *file = fopen("ranking.txt", "r");
-    RankEntry ranking[MAX_RANKING];
+    Player ranking[MAX_RANKING];
     
     // Inicializar o ranking com valores padrão
     for (int i = 0; i < MAX_RANKING; i++) {
@@ -719,4 +719,43 @@ void DrawGameOverScreen(void) {
 	DrawText("ESC PARA SAIR", 70, 650, 20, DARKBLUE);
 
 	EndDrawing();
+}
+
+void salvarRanking(const char* nome, int score, int numBanhistas) {
+    Player ranking[MAX_RANKING + 1];
+    int count = 0;
+
+    // Ler o ranking atual do arquivo
+    FILE* file = fopen("ranking.txt", "r");
+    if (file != NULL) {
+        while (fscanf(file, "%s %d %d", ranking[count].nome, &ranking[count].score, &ranking[count].numBanhistas) != EOF && count < MAX_RANKING) {
+            count++;
+        }
+        fclose(file);
+    }
+
+    // Adicionar o novo Player
+    strcpy(ranking[count].nome, nome);
+    ranking[count].score = score;
+    ranking[count].numBanhistas = numBanhistas;
+    count++;
+
+    // Ordenar o ranking
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = i + 1; j < count; j++) {
+            if (ranking[j].score > ranking[i].score || 
+                (ranking[j].score == ranking[i].score && ranking[j].numBanhistas > ranking[i].numBanhistas)) {
+                Player temp = ranking[i];
+                ranking[i] = ranking[j];
+                ranking[j] = temp;
+            }
+        }
+    }
+
+    // Salvar o ranking atualizado no arquivo
+    file = fopen("ranking.txt", "w");
+    for (int i = 0; i < count && i < MAX_RANKING; i++) {
+        fprintf(file, "%s %d %d\n", ranking[i].nome, ranking[i].score, ranking[i].numBanhistas);
+    }
+    fclose(file);
 }
