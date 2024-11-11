@@ -13,7 +13,7 @@
 #define TERCEIRA_ONDA 13
 
 #define NUM_MAX_BANHISTA 5
-#define MAX_RANKING 5
+#define MAX_RANKING 100
 
 typedef enum { PRIMEIRA = 0, SEGUNDA, TERCEIRA } OndaObstaculo;
 typedef enum { MENU = 0, PLAY, GAME_OVER } GameState;
@@ -53,9 +53,9 @@ typedef struct BanhistaColetados{
 } BanhistaColetados;
 
 typedef struct Player {
-		char nome[50];
-		int score;
-		int banhistas;
+	char nome[50];
+	int score;
+	int banhistas;
 } Player;
 
 Obstaculo *head = NULL;
@@ -83,8 +83,7 @@ static bool victory = false;
 int vida = 10;
 
 static Barco barco = { 0 };
-static Obstaculo obstaculo[NUM_MAX_OBJETOS] = { 0 };
-static Banhista banhista[NUM_MAX_BANHISTA] = { 0 };
+
 static OndaObstaculo wave = { 0 };
 
 static float alpha = 0.0f;
@@ -147,8 +146,9 @@ void InitGame(void){
 	wave = PRIMEIRA;
 	activeObstaculos = PRIMEIRA_ONDA;
 	score = 0;
-	vida = 10;
+	vida = 50;
 	alpha = 0;
+	banhistaSalvos = 0;
 
 	barco.rec.x = 20;
 	barco.rec.y = 50;
@@ -695,7 +695,7 @@ void UpdateDrawFrame(void) {
 }
 
 void DrawGameOverScreen(void) {
-    FILE *file = fopen("ranking.txt", "r");
+    FILE *file = fopen("rankingOrdenado.txt", "r");
     Player ranking[MAX_RANKING];
     
     // Verifica se o arquivo abriu corretamente
@@ -725,13 +725,13 @@ void DrawGameOverScreen(void) {
 	DrawRectangleLines(50, 50, screenWidth -100, screenHeight -100, DARKGRAY);
 
     // Exibir as informações do ranking
-    for (int i = 0; i < MAX_RANKING; i++) {
+    for (int i = 0; i < 5; i++) {
 		DrawText(ranking[i].nome, 70, 80 + 30 * i, 20, DARKBLUE);
         DrawText(TextFormat("Score: %d", ranking[i].score), 200, 80 + 30 * i, 20, DARKGREEN); 
 		DrawText(TextFormat("Banhistas: %d", ranking[i].banhistas), 350, 80 + 30 * i, 20, DARKPURPLE);
 
-		DrawText("Game Over", screenWidth / 2 - MeasureText("Game Over", 40) / 2 + 2, screenHeight / 2 - 100 + 2, 40, GRAY); 
-		DrawText("Game Over", screenWidth / 2 - MeasureText("Game Over", 40) / 2, screenHeight / 2 - 100, 40, RED);     
+		DrawText("Ranking", screenWidth / 2 - MeasureText("Ranking", 40) / 2 + 2, screenHeight / 2 - 100 + 2, 40, GRAY); 
+		DrawText("Ranking", screenWidth / 2 - MeasureText("Ranking", 40) / 2, screenHeight / 2 - 100, 40, RED);     
 	}	
 	DrawText("M PARA VOLTAR AO MENU", 70, 600, 20, DARKBLUE);
 	DrawText("ESC PARA SAIR", 70, 650, 20, DARKBLUE);
@@ -740,46 +740,46 @@ void DrawGameOverScreen(void) {
 }
 
 void salvarRanking(const char* nome, int score, int numBanhistas) {
-    Player ranking[MAX_RANKING + 1];
+    Player ranking[MAX_RANKING];
     int count = 0;
 
-    // Ler o ranking atual do arquivo
-    FILE* file = fopen("ranking.txt", "r");
+    // Abrir ranking.txt em modo de adição e escrever o novo jogador
+    FILE* file = fopen("ranking.txt", "a");
     if (file != NULL) {
-        while (fscanf(file, "%s;%d;%d\n", ranking[count].nome, &ranking[count].score, &ranking[count].banhistas) != EOF && count < MAX_RANKING) {
+        fprintf(file, "%s;%d;%d\n", nome, score, numBanhistas);
+        fclose(file);
+    }
+
+    // Ler o ranking atualizado do arquivo
+    file = fopen("ranking.txt", "r");
+    if (file != NULL) {
+        while (fscanf(file, "%[^;];%d;%d\n", ranking[count].nome, &ranking[count].score, &ranking[count].banhistas) != EOF && count < MAX_RANKING) {
             count++;
         }
         fclose(file);
     }
 
-    // Adicionar o novo Player
-    strcpy(ranking[count].nome, nome);
-    ranking[count].score = score;
-    ranking[count].banhistas = numBanhistas;
-    count++;
+    // Ordenar o ranking pelo score
+    ordenarRanking(ranking, count);
 
-    // Salvar o ranking atualizado no arquivo
-    file = fopen("ranking.txt", "w");
-    for (int i = 0; i < count && i < MAX_RANKING; i++) {
+    // Salvar apenas o top 5 no arquivo rankingOrdenado.txt
+    file = fopen("rankingOrdenado.txt", "w");
+    for (int i = 0; i < count && i < 5; i++) {
         fprintf(file, "%s;%d;%d\n", ranking[i].nome, ranking[i].score, ranking[i].banhistas);
     }
+    fclose(file);
+}
 
-	// Ordenar o ranking
+void ordenarRanking(Player ranking[], int count) {
     for (int i = 0; i < count - 1; i++) {
-        for (int j = i + 1; j < count; j++) {
-            if (ranking[j].score > ranking[i].score || 
-                (ranking[j].score == ranking[i].score && ranking[j].banhistas > ranking[i].banhistas)) {
-                Player temp = ranking[i];
-                ranking[i] = ranking[j];
-                ranking[j] = temp;
+        for (int j = 0; j < count - i - 1; j++) {
+            if (ranking[j].score < ranking[j + 1].score || 
+                (ranking[j].score == ranking[j + 1].score && ranking[j].banhistas < ranking[j + 1].banhistas)) {
+                // Troca os elementos
+                Player temp = ranking[j];
+                ranking[j] = ranking[j + 1];
+                ranking[j + 1] = temp;
             }
         }
     }
-
-	// Criar um novo arquivo txt para salvar o rankin ordenado
-	FILE* fileOrdenado = fopen("rankingOrdenado.txt", "w");
-	for (int i = 0; i < count && i < MAX_RANKING; i++) {
-		fprintf(fileOrdenado, "%s;%d;%d\n", ranking[i].nome, ranking[i].score, ranking[i].banhistas);
-	}
-    fclose(file);
 }
