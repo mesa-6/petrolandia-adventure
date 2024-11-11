@@ -746,7 +746,7 @@ void salvarRanking(const char* nome, int score, int numBanhistas) {
     // Ler o ranking atual do arquivo
     FILE* file = fopen("ranking.txt", "r");
     if (file != NULL) {
-        while (fscanf(file, "%[^;];%d;%d\n", ranking[count].nome, &ranking[count].score, &ranking[count].banhistas) != EOF && count < MAX_RANKING) {
+        while (fscanf(file, "%s;%d;%d\n", ranking[count].nome, &ranking[count].score, &ranking[count].banhistas) != EOF && count < MAX_RANKING) {
             count++;
         }
         fclose(file);
