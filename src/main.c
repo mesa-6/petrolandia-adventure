@@ -758,7 +758,13 @@ void salvarRanking(const char* nome, int score, int numBanhistas) {
     ranking[count].banhistas = numBanhistas;
     count++;
 
-    // Ordenar o ranking
+    // Salvar o ranking atualizado no arquivo
+    file = fopen("ranking.txt", "w");
+    for (int i = 0; i < count && i < MAX_RANKING; i++) {
+        fprintf(file, "%s;%d;%d\n", ranking[i].nome, ranking[i].score, ranking[i].banhistas);
+    }
+
+	// Ordenar o ranking
     for (int i = 0; i < count - 1; i++) {
         for (int j = i + 1; j < count; j++) {
             if (ranking[j].score > ranking[i].score || 
@@ -770,10 +776,10 @@ void salvarRanking(const char* nome, int score, int numBanhistas) {
         }
     }
 
-    // Salvar o ranking atualizado no arquivo
-    file = fopen("ranking.txt", "w");
-    for (int i = 0; i < count && i < MAX_RANKING; i++) {
-        fprintf(file, "%s;%d;%d\n", ranking[i].nome, ranking[i].score, ranking[i].banhistas);
-    }
+	// Criar um novo arquivo txt para salvar o rankin ordenado
+	FILE* fileOrdenado = fopen("rankingOrdenado.txt", "w");
+	for (int i = 0; i < count && i < MAX_RANKING; i++) {
+		fprintf(fileOrdenado, "%s;%d;%d\n", ranking[i].nome, ranking[i].score, ranking[i].banhistas);
+	}
     fclose(file);
 }
