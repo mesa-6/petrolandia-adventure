@@ -416,6 +416,12 @@ void UpdateGame(void){
 
                 if (score >= 10000){
 					victory = true;
+					// Atualizar o ranking com o nome do Player e a pontuação
+					Player player;
+					strcpy(player.nome, nick);
+					player.score = score;
+					player.banhistas = banhistaSalvos;
+					salvarRanking(player.nome, player.score, player.banhistas);
 					gameOver = true;
 					return;
 				}
@@ -449,6 +455,12 @@ void UpdateGame(void){
 						atual->obstaculo.active = false;
 						if (vida == 0) {
 							timerBanhista = 0;
+							// Atualizar o ranking com o nome do Player e a pontuação
+							Player player;
+							strcpy(player.nome, nick);
+							player.score = score;
+							player.banhistas = banhistaSalvos;
+							salvarRanking(player.nome, player.score, player.banhistas);
 							gameOver = true;
 						}
             		}
@@ -468,6 +480,12 @@ void UpdateGame(void){
 						atual->obstaculo.active = false;
 						if (vida == 0) {
 							timerBanhista = 0;
+							// Atualizar o ranking com o nome do Player e a pontuação
+							Player player;
+							strcpy(player.nome, nick);
+							player.score = score;
+							player.banhistas = banhistaSalvos;
+							salvarRanking(player.nome, player.score, player.banhistas);
 							gameOver = true;
 						}
             		}
@@ -487,6 +505,12 @@ void UpdateGame(void){
 						atual->obstaculo.active = false;
 						if (vida == 0) {
 							timerBanhista = 0;
+							// Atualizar o ranking com o nome do Player e a pontuação
+							Player player;
+							strcpy(player.nome, nick);
+							player.score = score;
+							player.banhistas = banhistaSalvos;
+							salvarRanking(player.nome, player.score, player.banhistas);
 							gameOver = true;
 						}
             		}
