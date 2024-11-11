@@ -746,7 +746,7 @@ void salvarRanking(const char* nome, int score, int numBanhistas) {
     // Ler o ranking atual do arquivo
     FILE* file = fopen("ranking.txt", "r");
     if (file != NULL) {
-        while (fscanf(file, "%s;%d;%d", ranking[count].nome, &ranking[count].score, &ranking[count].banhistas) != EOF && count < MAX_RANKING) {
+        while (fscanf(file, "%[^;];%d;%d\n", ranking[count].nome, &ranking[count].score, &ranking[count].banhistas) != EOF && count < MAX_RANKING) {
             count++;
         }
         fclose(file);
@@ -758,13 +758,7 @@ void salvarRanking(const char* nome, int score, int numBanhistas) {
     ranking[count].banhistas = numBanhistas;
     count++;
 
-    // Salvar o ranking atualizado no arquivo
-    file = fopen("ranking.txt", "w");
-    for (int i = 0; i < count && i < MAX_RANKING; i++) {
-        fprintf(file, "%s;%d;%d\n", ranking[i].nome, ranking[i].score, ranking[i].banhistas);
-    }
-
-	// Ordenar o ranking
+    // Ordenar o ranking
     for (int i = 0; i < count - 1; i++) {
         for (int j = i + 1; j < count; j++) {
             if (ranking[j].score > ranking[i].score || 
@@ -774,6 +768,12 @@ void salvarRanking(const char* nome, int score, int numBanhistas) {
                 ranking[j] = temp;
             }
         }
+    }
+
+    // Salvar o ranking atualizado no arquivo
+    file = fopen("ranking.txt", "w");
+    for (int i = 0; i < count && i < MAX_RANKING; i++) {
+        fprintf(file, "%s;%d;%d\n", ranking[i].nome, ranking[i].score, ranking[i].banhistas);
     }
     fclose(file);
 }
