@@ -1,33 +1,65 @@
-# Petrolandia Adventure
+# Petrolandia Adventure ⛪
 
- Petrolandia Adventure e um  jogo simples feito por alunos do 3- periodo da faculdade C.E.S.A.R School, para a cadeira de AED(Algoritimos e estrutura de dados), tendo como tema pontos turisticos de Pernambuco.
 
-## Objetivo :
+**Petrolandia Adventure** é um jogo desenvolvido pelos alunos do 3º período da faculdade **CESAR School** para a disciplina de **Algoritmos e Estruturas de Dados**. Inspirado em pontos turísticos de Pernambuco, o jogo leva o jogador a uma jornada cheia de desafios e descobertas.
 
- O objetivo no jogo e sobreviver aos obstaculos enquanto coleta turista que se perderam no caminho a Petrolandia, e ao junta pontos o suficente, desviando dos obstaculos, voce chegara a igreja submersa de Petrolandia .
+---
 
-## controles:
-w - para cima
-a - para esquerda
-s - para baixo
-d - para direita
+## 🎯 Objetivo
 
-# Como Rodar o Jogo
+O jogador deve sobreviver aos obstáculos enquanto coleta turistas perdidos no caminho para **Petrolândia**. Ao acumular pontos suficientes e desviar dos perigos, o destino final será a icônica **Igreja Submersa de Petrolândia**.
 
-Baixe a biblioteca a partir desse github :   https://github.com/raysan5/raylib 
+---
 
-Apos a instalação,havera distinções dependendo do seu OS
+## 🎮 Controles
 
-## Linux :
-CD para o diretorio que chamado "build"
-run ./premake5 gmake2
-CD para o diretorio original 
-run make 
-O jogo deve ser criado apos isso
+- **W**: Mover para cima
+- **A**: Mover para a esquerda
+- **S**: Mover para baixo
+- **D**: Mover para a direita
 
-## Microsoft :
-Run o build-VisualStudio2022.bat
-clique duas vezes .sln que foi criado
-O jogo deve ser criado apos isso
+---
 
-Para mais informações utilize esse git que usamos de base : https://github.com/raylib-extras/raylib-quickstart
+## 🚀 Como Rodar o Jogo
+
+1. Baixe a biblioteca Raylib através deste [GitHub](https://github.com/raysan5/raylib).
+2. Após a instalação, siga as instruções para o seu sistema operacional:
+
+### Para Linux
+- Navegue até o diretório "build":
+```bash
+cd build
+```
+- Execute o comando:
+```bash
+./premake5 gmake2
+```
+- Retorne ao diretório principal:
+```bash
+cd ..
+```
+- Compilar:
+```bash
+make
+```
+
+### Para Windows
+- Execute o arquivo `build-VisualStudio2022.bat`.
+- Abra o arquivo `.sln` criado no Visual Studio.
+- Após a construção, o jogo estará pronto para rodar.
+
+> Para mais informações, consulte o [raylib-quickstart](https://github.com/raylib-extras/raylib-quickstart), usado como base para este projeto.
+---
+
+## 👥 Equipe de Desenvolvimento
+
+- Arthur Capistrano
+- Arthur Pinheiro
+- Gabriel Ramos
+- Gheyson Melo
+- João Antônio Medeiros
+- Thiago Manguinho
+
+---
+
+**Aproveite explorando Petrolândia e superando desafios em Petrolandia Adventure!**
