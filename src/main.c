@@ -470,54 +470,103 @@ void UpdateGame(void) {
 			timerBanhista = 0; // Reseta o timer
 		}
 
-		do { // Percorre a lista de obstáculos e verifica colisões - Lista Circular
-			if (atual->obstaculo.active && CheckCollisionRecs(barco.rec, atual->obstaculo.rec)) { // Verifica se houve colisão entre o barco e o obstáculo
-				if (score > 0) { // Se a pontuação for maior que 0, decrementa 50 pontos
-					score -= 50;
-				}
-				
-				if (banhistaSalvos > 0) { // Se a quantidade de banhistas salvos for maior que 0, decrementa 1 banhista salvo
-					banhistaSalvos -= 1;
-				}
-
-				if (vida > 0) { // Se a vida for maior que 0, decrementa 1 vida
-					vida -= 2;
-				}
-
-				removerBanhistaColetados(&headBanhistaColetados, &tailBanhistaColetados); // Remove o primeiro banhista coletado
-
-				atual->obstaculo.active = false; // Desativa o obstáculo
-
-				if (vida == 0) { // Se a vida for igual a 0, o jogo acaba
-					timerBanhista = 0; // Reseta o timer do banhista
-
-					// Atualizar o ranking com o nome do Player e a pontuação
-					Player player;
-					strcpy(player.nome, nick);
-					player.score = score;
-					player.banhistas = banhistaSalvos;
-					salvarRanking(player.nome, player.score, player.banhistas); // Salva o jogador no ranking
-					gameOver = true; // O jogo acaba
-				}
+		do {
+			switch (wave){
+				case PRIMEIRA:{
+					if (atual->obstaculo.active && CheckCollisionRecs(barco.rec, atual->obstaculo.rec)) {
+						if (score > 0){
+							score -= 50;
+						}
+						if (banhistaSalvos > 0){
+							banhistaSalvos -= 1;
+						}
+						if (vida > 0){
+							vida -= 1;
+							printf("%d\n", score);
+						}
+						removerBanhistaColetados (&headBanhistaColetados, &tailBanhistaColetados);
+						atual->obstaculo.active = false;
+						if (vida == 0) {
+							timerBanhista = 0;
+							// Atualizar o ranking com o nome do Player e a pontuação
+							Player player;
+							strcpy(player.nome, nick);
+							player.score = score;
+							player.banhistas = banhistaSalvos;
+							salvarRanking(player.nome, player.score, player.banhistas);
+							gameOver = true;
+						}
+            		}
+				} break;
+				case SEGUNDA:{
+					if (atual->obstaculo.active && CheckCollisionRecs(barco.rec, atual->obstaculo.rec)) {
+						if (score > 0){
+							score -= 100;
+						}
+						if (banhistaSalvos > 0){
+							banhistaSalvos -= 1;
+						}
+						if (vida > 0){
+							vida -= 1;
+						}
+						removerBanhistaColetados (&headBanhistaColetados, &tailBanhistaColetados);
+						atual->obstaculo.active = false;
+						if (vida == 0) {
+							timerBanhista = 0;
+							// Atualizar o ranking com o nome do Player e a pontuação
+							Player player;
+							strcpy(player.nome, nick);
+							player.score = score;
+							player.banhistas = banhistaSalvos;
+							salvarRanking(player.nome, player.score, player.banhistas);
+							gameOver = true;
+						}
+            		}
+				} break;
+				case TERCEIRA:{
+					if (atual->obstaculo.active && CheckCollisionRecs(barco.rec, atual->obstaculo.rec)) {
+						if (score > 0){
+							score -= 150;
+						}
+						if (banhistaSalvos > 0){
+							banhistaSalvos -= 1;
+						}
+						if (vida > 0){
+							vida -= 1;
+						}
+						removerBanhistaColetados (&headBanhistaColetados, &tailBanhistaColetados);
+						atual->obstaculo.active = false;
+						if (vida == 0) {
+							timerBanhista = 0;
+							// Atualizar o ranking com o nome do Player e a pontuação
+							Player player;
+							strcpy(player.nome, nick);
+							player.score = score;
+							player.banhistas = banhistaSalvos;
+							salvarRanking(player.nome, player.score, player.banhistas);
+							gameOver = true;
+						}
+            		}
+				} break;
+				default: break;
 			}
-			
-            if (!atual->obstaculo.active) { // Se o obstáculo não estiver ativo
-                atual->obstaculo.active = true; // Ativa o obstáculo
-                atual->obstaculo.rec.x = GetRandomValue(screenWidth, screenWidth + 1000); // Posição aleatória na tela em x
-                atual->obstaculo.rec.y = GetRandomValue(470, 700); // Posição aleatória na tela em y
+
+            if (!atual->obstaculo.active) {
+                atual->obstaculo.active = true;
+                atual->obstaculo.rec.x = GetRandomValue(screenWidth, screenWidth + 1000);
+                atual->obstaculo.rec.y = GetRandomValue(470, 700);
             }
 
-            if (atual->obstaculo.active) { // Se o obstáculo estiver ativo
-                atual->obstaculo.rec.x -= atual->obstaculo.speed.x; // Movimenta o obstáculo para a esquerda
-
-                if (atual->obstaculo.rec.x < 0) {  // Se o obstáculo sair da tela
-					score += 100; // Incrementa 100 pontos
-                    atual->obstaculo.rec.x = GetRandomValue(screenWidth, screenWidth + 1000); // Posição aleatória na tela em x
-                    atual->obstaculo.rec.y = GetRandomValue(470, 700); // Posição aleatória na tela em y
+            if (atual->obstaculo.active) {
+                atual->obstaculo.rec.x -= atual->obstaculo.speed.x;
+                if (atual->obstaculo.rec.x < 0) {
+					score += 100;
+                    atual->obstaculo.rec.x = GetRandomValue(screenWidth, screenWidth + 1000);
+                    atual->obstaculo.rec.y = GetRandomValue(470, 700);
                 }
             }
 
-            atual = atual->prox; // Atualiza o ponteiro para o próximo obstáculo
+            atual = atual->prox;
         } while (atual != head);
 
 		while (banhistaTela != NULL) { // Percorre a lista de banhistas que aparecem na tela e verifica colisões - Lista Simplesmente Encadeada
